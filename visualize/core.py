@@ -56,9 +56,44 @@ def borough(df):
     return(plt.show())
 
 #barplot of sample occurence by year
-
 def year(df):
-    yearfreq = sns.set(style="whitegrid")
-    yearfreq = sns.countplot(x='year', data=musicdf2)
+    sns.set(style="whitegrid")
     plt.title('Presence of Music from 2016-2019')
-    return(yearfreq)
+    return(sns.countplot(x='year', data=df))
+
+#barplot of sample occurence by week
+def week(df):
+    plt.figure(figsize=(15, 15))
+    plt.title('Presence of Music By Week')
+    return(sns.countplot(x='week', data=df))
+
+
+#barplot of sample occurence by day
+def day(df):
+    plt.figure(figsize=(10,10))
+
+    #select colors
+    colors = ['lightpink','lavender','lightblue', 'thistle', 'moccasin','lightgoldenrodyellow', 'honeydew']
+
+    #count music frequency for each day
+    ax = df['day'].value_counts()
+
+    #plot data using information above
+    plt.title('Presence of Music by Day')
+    return(ax.plot.pie(colors = colors, autopct='%.2f%%'))
+
+#barplot of sample occurence by hour
+def hour(df):
+    plt.figure(figsize=(15, 15))
+    sns.set(style="whitegrid")
+    plt.title('Presence of Music by Hour')
+    return(sns.countplot(x='hour', data=df))
+
+
+#mapping sensors to data barplot
+def sensorbarplot(df, column):
+    col = str(column)
+    plt.figure(figsize =(20,20))
+    plt.xlabel('Sensor')
+    plt.ylabel('Music Presence Occurrence')
+    return(df.groupby('sensor_id')[col].count().plot.bar())
