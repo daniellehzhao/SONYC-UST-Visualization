@@ -27,7 +27,7 @@ def heatmap(gdf, location, lat, long):
 
     # create heatmap
     hm = HeatMap(
-        list(zip(gdf.(latitude).values, gdf.(longitude).values)),
+        list(zip(gdf.latitude.values, gdf.longitude.values)),
         min_opacity=0.2,
         radius=10,
         blur=13,
@@ -69,7 +69,6 @@ def clustermap(gdf, location, lat, long):
     return circlemap
 
 
-
 def borough(df):
     """
     plot a pie chart of occurrence by borough
@@ -96,7 +95,6 @@ def borough(df):
     return plt.show()
 
 
-
 def year(df):
     """
     bar plot of sample occurrence by year
@@ -112,7 +110,6 @@ def year(df):
     # noinspection PyUnresolvedReferences
     plt.title('Presence of Music from 2016-2019')
     return sns.countplot(x='year', data=df)
-
 
 
 def week(df):
@@ -132,7 +129,6 @@ def week(df):
     # noinspection PyUnresolvedReferences
     plt.title('Presence of Music By Week')
     return sns.countplot(x='week', data=df)
-
 
 
 def day(df):
@@ -162,7 +158,6 @@ def day(df):
     return ax.plot.pie(colors=colors, autopct='%.2f%%')
 
 
-
 def hour(df):
     """
     barplot of sample occurrence by hour
@@ -181,7 +176,6 @@ def hour(df):
     # noinspection PyUnresolvedReferences
     plt.title('Presence of Music by Hour')
     return sns.countplot(x='hour', data=df)
-
 
 
 def sensorbarplot(df, column):
