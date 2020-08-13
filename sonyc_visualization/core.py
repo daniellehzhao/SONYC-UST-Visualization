@@ -87,7 +87,7 @@ def load_df(csv, classes, main_class=None):
         return newdf
 
 
-def create_geodata_frame(df, print_head=None):
+def create_geodata_frame(df, print_head=False):
     """
     creates a geo data frame that can be used with other functions to do geospatial analysis
 
@@ -112,7 +112,7 @@ def create_geodata_frame(df, print_head=None):
         return gdf
 
 
-def sensor_to_class_gdf(df, main_class, print_head=None):
+def sensor_to_class_gdf(df, main_class, print_head=False):
     """
     This function works specifically well with clustermap because it provides a dataframe that is grouped by sensor and
     mapped to a certain class.
