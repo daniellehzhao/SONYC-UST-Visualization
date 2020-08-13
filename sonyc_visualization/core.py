@@ -2,23 +2,26 @@ import pandas as pd
 import seaborn as sns
 import matplotlib as plt
 import folium
+import geopandas as gpd
 from folium import Map
 from folium.plugins import MarkerCluster
 from folium.plugins import HeatMap
 
 
-def clean(csv, classes, main_class=None):
+def load_df(csv, classes, main_class=None):
     """
-    cleans data by taking out unnecessary columns and only counting occurrences that are true
+    loads data by taking out unnecessary columns and only counting occurrences that are true
 
     Parameters
     ----------
-    csv : path or name of csv file (string)
-    classes : desired class and subclass column names (list format)
-    main_class : name of the working overarching class (string)
+    csv (string) : path or name of csv file
+    classes (list) : desired class and subclass column names
+    main_class (string): name of the working overarching class. If not specified, the dataframe will not check for
+    occurrences of the given class that are true and will not remove false ones
 
     Returns
     -------
+    dataframe that only contains desired columns of classes/subclasses
 
     """
     col1 = ['annotator_id', '1-1_small-sounding-engine_presence',
@@ -84,13 +87,69 @@ def clean(csv, classes, main_class=None):
         return newdf
 
 
+def create_geodata_frame(df, print_head=None):
+    """
+    creates a geo data frame that can be used with other functions to do geospatial analysis
+
+    Parameters
+    ----------
+    df (dataframe): dataframe with 'latitude' and 'longitude' columns (must be named that)
+    print (bool) (default: None) : boolean value to specify whether or not to print head
+
+    Returns
+    -------
+    a geodata frame that has geometry and specifies longitude/latitude points
+    works well with heatmap function
+
+    """
+    gdf = gpd.GeoDataFrame(
+        df, crs={'init': 'epsg:4326'},
+        geometry=gpd.points_from_xy(df.longitude, df.latitude))
+    if print_head:
+        gdf.head()
+        return gdf
+    else:
+        return gdf
+
+
+def sensor_to_class_gdf(df, main_class, print_head=None):
+    """
+    This function works specifically well with clustermap because it provides a dataframe that is grouped by sensor and
+    mapped to a certain class.
+
+    Parameters
+    ----------
+    df (dataframe): dataframe
+    main_class (string): name of class/column that you want to specifically map sensors to
+    print_head (bool) (default:None): specify whether or not to print the head of new gdf
+
+    Returns
+    -------
+    a geodata frame (with geometry on latitude and longitude) that works well with clustermap
+
+    """
+    # create dataframe that is grouped by sensor and counts occurrence of overarching class for each one
+
+    gdf = df.groupby(['sensor_id', 'latitude', 'longitude'])[main_class].count().reset_index()
+
+    # convert to geo dataframe and create geometry column with lat/long
+    gdf = gpd.GeoDataFrame(
+        gdf, crs={'init': 'epsg:4326'}, geometry=gpd.points_from_xy(gdf.longitude, gdf.latitude))
+
+    if print_head:
+        gdf.head()
+        return gdf
+    else:
+        return gdf
+
+
 def heatmap(gdf, location):
     """
     This is a function that creates a heatmap.
     Parameters
     ----------
-    gdf : geodata frame
-    location : latitude and longitude (in list format) of central map location (e.g. NYC = [40.693943, -74.025])
+    gdf (geodata frame) : geodata frame
+    location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
 
     Returns
     -------
@@ -113,16 +172,44 @@ def heatmap(gdf, location):
     return emptymap
 
 
+def add_heatmap(original_map, gdf, gradient):
+    """
+    This function allows you to add a heatmap layer of perhaps data from a different class that you want to compare
+
+    Parameters
+    ----------
+    original_map (map variable): This must be an existing heatmap, or even an empty map
+    gdf (geodata frame): geodata frame
+    gradient (dictionary): specifies gradient color configuration so that colors are differentiable
+    (e.g. {0.4: ‘blue’, 0.65: ‘lime’, 1: ‘red’})
+
+    Returns
+    -------
+    A map with an added heatmap layer
+
+    """
+    hm = HeatMap(
+        list(zip(gdf.latitude.values, gdf.longitude.values)),
+        min_opacity=0.2,
+        radius=10,
+        blur=13,
+        gradient=gradient,
+        max_zoom=1,
+    )
+    original_map.add_child(hm)
+    return original_map
+
+
 def clustermap(gdf, location, lat, long):
     """
     This is a function that creates a cluster map.
 
     Parameters
     ----------
-    gdf : geodata frame
-    location : atitude and longitude (in list format) of central map location (e.g. NYC = [40.693943, -74.025])
-    lat : dataset's column name for latitude (string)
-    long : dataset's column name for longitude (string)
+    gdf (geodata frame): geodata frame
+    location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
+    lat (string) : dataset's column name for latitude
+    long (string) : dataset's column name for longitude
 
     Returns
     -------
@@ -143,16 +230,18 @@ def clustermap(gdf, location, lat, long):
     return circlemap
 
 
-def borough(df):
+def occurrence_by_borough(df):
     """
     plot a pie chart of occurrence by borough
+
     Parameters
     ----------
-    df : dataframe
+    df (dataframe) : dataframe
 
     Returns
     -------
     a pie chart with occurrence of class in each borough
+
     """
     # find and tally occurrences in each borough
     borough_freq = df['borough'].value_counts()
@@ -169,100 +258,52 @@ def borough(df):
     return plt.show()
 
 
-def year(df):
+def occurrence_by_time(df, time):
     """
-    bar plot of sample occurrence by year
+    temporal view of sample data
+
     Parameters
     ----------
-    df
+    df (dataframe): dataframe
+    time (string): specifies what scope you want to look at (e.g. hour, day, week, year)
 
     Returns
     -------
-
+    returns a barplot based on what temporal measure you desire to use
     """
     sns.set(style="whitegrid")
     # noinspection PyUnresolvedReferences
-    plt.title('Presence of Music from 2016-2019')
-    return sns.countplot(x='year', data=df)
-
-
-def week(df):
-    """
-    barplot of sample occurrence by week
-
-    Parameters
-    ----------
-    df
-
-    Returns
-    -------
-
-    """
-    # noinspection PyUnresolvedReferences
     plt.figure(figsize=(15, 15))
-    # noinspection PyUnresolvedReferences
-    plt.title('Presence of Music By Week')
-    return sns.countplot(x='week', data=df)
+    if time == 'year':
+        # noinspection PyUnresolvedReferences
+        plt.title('Presence of Music from 2016-2019')
+        return sns.countplot(x='year', data=df)
+    elif time == 'week':
+        # noinspection PyUnresolvedReferences
+        plt.title('Presence of Music By Week')
+        return sns.countplot(x='week', data=df)
+    elif time == 'day':
+        # noinspection PyUnresolvedReferences
+        plt.title('Presence of Music By Week')
+        return sns.countplot(x='week', data=df)
+    elif time == 'hour':
+        # noinspection PyUnresolvedReferences
+        plt.title('Presence of Music by Hour')
+        return sns.countplot(x='hour', data=df)
 
 
-def day(df):
-    """
-    bar plot of sample occurrence by day
-
-    Parameters
-    ----------
-    df
-
-    Returns
-    -------
-
-    """
-    # noinspection PyUnresolvedReferences
-    plt.figure(figsize=(10, 10))
-
-    # select colors
-    colors = ['lightpink', 'lavender', 'lightblue', 'thistle', 'moccasin', 'lightgoldenrodyellow', 'honeydew']
-
-    # count music frequency for each day
-    ax = df['day'].value_counts()
-
-    # plot data using information above
-    # noinspection PyUnresolvedReferences
-    plt.title('Presence of Music by Day')
-    return ax.plot.pie(colors=colors, autopct='%.2f%%')
-
-
-def hour(df):
-    """
-    barplot of sample occurrence by hour
-
-    Parameters
-    ----------
-    df
-
-    Returns
-    -------
-
-    """
-    # noinspection PyUnresolvedReferences
-    plt.figure(figsize=(15, 15))
-    sns.set(style="whitegrid")
-    # noinspection PyUnresolvedReferences
-    plt.title('Presence of Music by Hour')
-    return sns.countplot(x='hour', data=df)
-
-
-def sensorbarplot(df, column):
+def occurrence_by_sensor(df, column):
     """
     mapping sensors to data barplot
 
     Parameters
     ----------
-    df
-    column
+    df (dataframe): dataframe
+    column (string): specify
 
     Returns
     -------
+    a barplot that shows samples per sensor
 
     """
     col = str(column)
