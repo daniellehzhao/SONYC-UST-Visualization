@@ -1,6 +1,6 @@
 import pandas as pd
 import seaborn as sns
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import folium
 import geopandas as gpd
 from folium import Map
@@ -143,13 +143,14 @@ def sensor_to_class_gdf(df, main_class, print_head=False):
         return gdf
 
 
-def heatmap(gdf, location):
+def heatmap(gdf, location, gradient=None):
     """
     This is a function that creates a heatmap.
     Parameters
     ----------
     gdf (geodata frame) : geodata frame
     location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
+    gradient (dict) (default:None): option to change the gradient, useful when combining other heatmaps
 
     Returns
     -------
@@ -158,14 +159,25 @@ def heatmap(gdf, location):
 
     emptymap = Map(location=location, zoom_start=12)
 
-    # create heatmap
-    hm = HeatMap(
-        list(zip(gdf.latitude.values, gdf.longitude.values)),
-        min_opacity=0.2,
-        radius=10,
-        blur=13,
-        max_zoom=1,
-    )
+    if gradient is not None:
+        # create heatmap
+        hm = HeatMap(
+            list(zip(gdf.latitude.values, gdf.longitude.values)),
+            min_opacity=0.2,
+            radius=10,
+            blur=13,
+            gradient=gradient,
+            max_zoom=1,
+        )
+    else:
+        # create heatmap
+        hm = HeatMap(
+            list(zip(gdf.latitude.values, gdf.longitude.values)),
+            min_opacity=0.2,
+            radius=10,
+            blur=13,
+            max_zoom=1,
+        )
 
     # add heatmap layer to empty layer
     emptymap.add_child(hm)
@@ -248,13 +260,9 @@ def occurrence_by_borough(df):
 
     my_colors = ['lightcoral', 'moccasin', 'lightcyan']
     borough_freq.plot.pie(autopct='%1.1f%%', colors=my_colors)
-    # noinspection PyUnresolvedReferences
     plt.title('Frequency of Music In Boroughs')
-    # noinspection PyUnresolvedReferences
     plt.axis('equal')
-    # noinspection PyUnresolvedReferences
     plt.figure(figsize=(2880, 288))
-    # noinspection PyUnresolvedReferences
     return plt.show()
 
 
@@ -272,22 +280,17 @@ def occurrence_by_time(df, time):
     returns a barplot based on what temporal measure you desire to use
     """
     sns.set(style="whitegrid")
-    # noinspection PyUnresolvedReferences
     plt.figure(figsize=(15, 15))
     if time == 'year':
-        # noinspection PyUnresolvedReferences
         plt.title('Presence of Music from 2016-2019')
         return sns.countplot(x='year', data=df)
     elif time == 'week':
-        # noinspection PyUnresolvedReferences
         plt.title('Presence of Music By Week')
         return sns.countplot(x='week', data=df)
     elif time == 'day':
-        # noinspection PyUnresolvedReferences
         plt.title('Presence of Music By Week')
         return sns.countplot(x='week', data=df)
     elif time == 'hour':
-        # noinspection PyUnresolvedReferences
         plt.title('Presence of Music by Hour')
         return sns.countplot(x='hour', data=df)
 
@@ -307,10 +310,7 @@ def occurrence_by_sensor(df, column):
 
     """
     col = str(column)
-    # noinspection PyUnresolvedReferences
     plt.figure(figsize=(20, 20))
-    # noinspection PyUnresolvedReferences
     plt.xlabel('Sensor')
-    # noinspection PyUnresolvedReferences
     plt.ylabel('Music Presence Occurrence')
     return df.groupby('sensor_id')[col].count().plot.bar()
