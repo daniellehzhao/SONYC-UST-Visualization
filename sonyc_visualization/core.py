@@ -266,7 +266,7 @@ def occurrence_by_borough(df):
     return plt.show()
 
 
-def occurrence_by_time(df, time):
+def occurrence_by_time(df, time, title = None):
     """
     temporal view of sample data
 
@@ -274,7 +274,7 @@ def occurrence_by_time(df, time):
     ----------
     df (dataframe): dataframe
     time (string): specifies what scope you want to look at (e.g. hour, day, week, year)
-
+    title (string, default:None): option to add a class specific title
     Returns
     -------
     returns a barplot based on what temporal measure you desire to use
@@ -282,16 +282,16 @@ def occurrence_by_time(df, time):
     sns.set(style="whitegrid")
     plt.figure(figsize=(15, 15))
     if time == 'year':
-        plt.title('Presence of Music from 2016-2019')
+        plt.title( title + ' occurrence by year')
         return sns.countplot(x='year', data=df)
     elif time == 'week':
-        plt.title('Presence of Music By Week')
+        plt.title( title + ' occurrence by week')
         return sns.countplot(x='week', data=df)
     elif time == 'day':
-        plt.title('Presence of Music By Week')
+        plt.title( title + ' occurrence by day)
         return sns.countplot(x='week', data=df)
     elif time == 'hour':
-        plt.title('Presence of Music by Hour')
+        plt.title( title + ' occurrence by hour')
         return sns.countplot(x='hour', data=df)
 
 
