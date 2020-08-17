@@ -266,7 +266,7 @@ def occurrence_by_borough(df):
     return plt.show()
 
 
-def occurrence_by_time(df, time, title=None):
+def occurrence_by_time(df, time, title):
     """
     temporal view of sample data
 
@@ -274,7 +274,7 @@ def occurrence_by_time(df, time, title=None):
     ----------
     df (dataframe): dataframe
     time (string): specifies what scope you want to look at (e.g. hour, day, week, year)
-    title (string, default:None): option to add a class specific title
+    title (string): option to add a class specific title
     Returns
     -------
     returns a barplot based on what temporal measure you desire to use
