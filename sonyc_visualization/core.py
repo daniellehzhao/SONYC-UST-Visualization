@@ -302,7 +302,7 @@ def occurrence_by_sensor(df, column, title):
     Parameters
     ----------
     df (dataframe): dataframe
-    column (string): specify
+    column (string): specify class column name
 
     Returns
     -------
