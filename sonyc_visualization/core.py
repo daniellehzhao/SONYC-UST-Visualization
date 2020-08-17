@@ -282,20 +282,20 @@ def occurrence_by_time(df, time, title):
     sns.set(style="whitegrid")
     plt.figure(figsize=(15, 15))
     if time == 'year':
-        plt.title(title + ' occurrence by year')
+        plt.title(title + ' Occurrence by Year')
         return sns.countplot(x='year', data=df)
     elif time == 'week':
-        plt.title(title + ' occurrence by week')
+        plt.title(title + ' Occurrence by Week')
         return sns.countplot(x='week', data=df)
     elif time == 'day':
-        plt.title(title + ' occurrence by day')
+        plt.title(title + ' Occurrence by Day')
         return sns.countplot(x='week', data=df)
     elif time == 'hour':
-        plt.title(title + ' occurrence by hour')
+        plt.title(title + ' Occurrence by Hour')
         return sns.countplot(x='hour', data=df)
 
 
-def occurrence_by_sensor(df, column):
+def occurrence_by_sensor(df, column, title):
     """
     mapping sensors to data barplot
 
@@ -312,5 +312,5 @@ def occurrence_by_sensor(df, column):
     col = str(column)
     plt.figure(figsize=(20, 20))
     plt.xlabel('Sensor')
-    plt.ylabel('Music Presence Occurrence')
+    plt.ylabel(title + ' Presence Occurrence By Sensor')
     return df.groupby('sensor_id')[col].count().plot.bar()
