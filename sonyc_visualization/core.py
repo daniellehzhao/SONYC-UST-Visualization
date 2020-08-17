@@ -266,7 +266,7 @@ def occurrence_by_borough(df):
     return plt.show()
 
 
-def occurrence_by_time(df, time, title = None):
+def occurrence_by_time(df, time, title=None):
     """
     temporal view of sample data
 
@@ -282,16 +282,16 @@ def occurrence_by_time(df, time, title = None):
     sns.set(style="whitegrid")
     plt.figure(figsize=(15, 15))
     if time == 'year':
-        plt.title( title + ' occurrence by year')
+        plt.title(title + ' occurrence by year')
         return sns.countplot(x='year', data=df)
     elif time == 'week':
-        plt.title( title + ' occurrence by week')
+        plt.title(title + ' occurrence by week')
         return sns.countplot(x='week', data=df)
     elif time == 'day':
-        plt.title( title + ' occurrence by day)
+        plt.title(title + ' occurrence by day')
         return sns.countplot(x='week', data=df)
     elif time == 'hour':
-        plt.title( title + ' occurrence by hour')
+        plt.title(title + ' occurrence by hour')
         return sns.countplot(x='hour', data=df)
 
 
