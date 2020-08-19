@@ -11,9 +11,9 @@ Included in this repo is a requirements.txt file which will simplify the process
 
 1. Create/activate your conda environment.
 
-Documentation: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+   Documentation: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 
 2. Install packages using requirements.txt  
-<pre><code>pip install -r requirements.txt</code></pre>
+   <pre><code>pip install -r requirements.txt</code></pre>
 
 (You will have to make sure that pip is up to date)
