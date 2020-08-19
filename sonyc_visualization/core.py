@@ -72,18 +72,16 @@ def load_df(csv, classes=None, main_class=None):
             '2_machinery-impact_presence', '3_non-machinery-impact_presence',
             '4_powered-saw_presence', '5_alert-signal_presence', '6_music_presence', '7_human-voice_presence',
             '8_dog_presence']
+    df = pd.read_csv(csv)
+
     if classes is not None:
         col2 = classes
         col3 = [x for x in col1 if x not in col2]
-        df = pd.read_csv(csv)
-        df = df.drop(columns=col3).groupby(
-            ['split', 'sensor_id', 'audio_filename', 'borough',
-             'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
-    else
-        df = pd.read_csv(csv)
-        df = df.groupby(
-            ['split', 'sensor_id', 'audio_filename', 'borough',
-             'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
+        df = df.drop(columns=col3)
+
+    df = df.groupby(
+        ['split', 'sensor_id', 'audio_filename', 'borough',
+         'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
     df = df.reset_index()
     df['borough'] = df['borough'].replace(1, 'Manhattan')
     df['borough'] = df['borough'].replace(3, 'Brooklyn')
@@ -94,7 +92,6 @@ def load_df(csv, classes=None, main_class=None):
     else:
         newdf = df[df[main_class] == True]
         return newdf
-
 
 
 def create_geodataframe(df, print_head=False):
@@ -145,12 +142,12 @@ def heatmap(gdf, location, gradient=None):
 
     # create heatmap
     hm = HeatMap(
-            list(zip(gdf.latitude.values, gdf.longitude.values)),
-            min_opacity=0.2,
-            radius=10,
-            blur=13,
-            gradient=gradient,
-            max_zoom=1,
+        list(zip(gdf.latitude.values, gdf.longitude.values)),
+        min_opacity=0.2,
+        radius=10,
+        blur=13,
+        gradient=gradient,
+        max_zoom=1,
     )
     # add heatmap layer to empty layer
     emptymap.add_child(hm)
