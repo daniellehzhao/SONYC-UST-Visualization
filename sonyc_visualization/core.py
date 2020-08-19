@@ -8,14 +8,16 @@ from folium.plugins import MarkerCluster
 from folium.plugins import HeatMap
 
 
-def load_df(csv, classes, main_class=None):
+def load_df(csv, classes=None, main_class=None):
     """
-    loads data by taking out unnecessary columns and only counting occurrences that are true
+    loads pandas dataframe to work with
+    allows you to load the entire dataframe but also allows you to take out unnecessary columns and only counting
+    occurrences that are true
 
     Parameters
     ----------
     csv (string) : path or name of csv file
-    classes (list) : desired class and subclass column names
+    classes (list) : desired class and subclass column names. If not specified, the function will load entire dataframe
     main_class (string): name of the working overarching class. If not specified, the dataframe will not check for
     occurrences of the given class that are true and will not remove false ones
 
@@ -24,6 +26,7 @@ def load_df(csv, classes, main_class=None):
     dataframe that only contains desired columns of classes/subclasses
 
     """
+
     col1 = ['annotator_id', '1-1_small-sounding-engine_presence',
             '1-2_medium-sounding-engine_presence',
             '1-3_large-sounding-engine_presence',
@@ -69,22 +72,38 @@ def load_df(csv, classes, main_class=None):
             '2_machinery-impact_presence', '3_non-machinery-impact_presence',
             '4_powered-saw_presence', '5_alert-signal_presence', '6_music_presence', '7_human-voice_presence',
             '8_dog_presence']
-    col2 = classes
-    col3 = [x for x in col1 if x not in col2]
-    df = pd.read_csv(csv)
-    df = df.drop(columns=col3).groupby(
-        ['split', 'sensor_id', 'audio_filename', 'borough',
-         'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
-    df = df.reset_index()
-    df['borough'] = df['borough'].replace(1, 'Manhattan')
-    df['borough'] = df['borough'].replace(3, 'Brooklyn')
-    df['borough'] = df['borough'].replace(4, 'Queens')
+    if classes is None:
+        df = pd.read_csv(csv)
+        df = df.drop(columns=col1).groupby(
+            ['split', 'sensor_id', 'audio_filename', 'borough',
+             'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
+        df = df.reset_index()
+        df['borough'] = df['borough'].replace(1, 'Manhattan')
+        df['borough'] = df['borough'].replace(3, 'Brooklyn')
+        df['borough'] = df['borough'].replace(4, 'Queens')
 
-    if main_class is None:
-        return df
+        if main_class is None:
+            return df
+        else:
+            newdf = df[df[main_class] == True]
+            return newdf
     else:
-        newdf = df[df[main_class] == True]
-        return newdf
+        col2 = classes
+        col3 = [x for x in col1 if x not in col2]
+        df = pd.read_csv(csv)
+        df = df.drop(columns=col3).groupby(
+            ['split', 'sensor_id', 'audio_filename', 'borough',
+             'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
+        df = df.reset_index()
+        df['borough'] = df['borough'].replace(1, 'Manhattan')
+        df['borough'] = df['borough'].replace(3, 'Brooklyn')
+        df['borough'] = df['borough'].replace(4, 'Queens')
+
+        if main_class is None:
+            return df
+        else:
+            newdf = df[df[main_class] == True]
+            return newdf
 
 
 def create_geodata_frame(df, print_head=False):
@@ -105,37 +124,6 @@ def create_geodata_frame(df, print_head=False):
     gdf = gpd.GeoDataFrame(
         df, crs={'init': 'epsg:4326'},
         geometry=gpd.points_from_xy(df.longitude, df.latitude))
-    if print_head:
-        gdf.head()
-        return gdf
-    else:
-        return gdf
-
-
-def sensor_to_class_gdf(df, main_class, print_head=False):
-    """
-    This function works specifically well with clustermap because it provides a dataframe that is grouped by sensor and
-    mapped to a certain class.
-
-    Parameters
-    ----------
-    df (dataframe): dataframe
-    main_class (string): name of class/column that you want to specifically map sensors to
-    print_head (bool) (default:None): specify whether or not to print the head of new gdf
-
-    Returns
-    -------
-    a geodata frame (with geometry on latitude and longitude) that works well with clustermap
-
-    """
-    # create dataframe that is grouped by sensor and counts occurrence of overarching class for each one
-
-    gdf = df.groupby(['sensor_id', 'latitude', 'longitude'])[main_class].count().reset_index()
-
-    # convert to geo dataframe and create geometry column with lat/long
-    gdf = gpd.GeoDataFrame(
-        gdf, crs={'init': 'epsg:4326'}, geometry=gpd.points_from_xy(gdf.longitude, gdf.latitude))
-
     if print_head:
         gdf.head()
         return gdf
@@ -184,7 +172,7 @@ def heatmap(gdf, location, gradient=None):
     return emptymap
 
 
-def add_heatmap(original_map, gdf, gradient):
+def add_heatmap(original_map, gdf, color_gradient=None):
     """
     This function allows you to add a heatmap layer of perhaps data from a different class that you want to compare
 
@@ -200,6 +188,11 @@ def add_heatmap(original_map, gdf, gradient):
     A map with an added heatmap layer
 
     """
+    if color_gradient is None:
+        gradient = {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+    else:
+        gradient = color_gradient
+
     hm = HeatMap(
         list(zip(gdf.latitude.values, gdf.longitude.values)),
         min_opacity=0.2,
@@ -212,13 +205,13 @@ def add_heatmap(original_map, gdf, gradient):
     return original_map
 
 
-def clustermap(gdf, location, lat, long):
+def clustermap(df, main_class, location, lat, long):
     """
     This is a function that creates a cluster map.
 
     Parameters
     ----------
-    gdf (geodata frame): geodata frame
+    df (dataframe): dataframe with latitude and longitude columns
     location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
     lat (string) : dataset's column name for latitude
     long (string) : dataset's column name for longitude
@@ -228,18 +221,30 @@ def clustermap(gdf, location, lat, long):
     A cluster map of sensors
 
     """
-    circlemap = folium.Map(location=location, zoom_start=12)
+    if (lat in df.columns) and (long in df.columns):
 
-    # add marker for each sensor, use a clustered view (zoom in to see individual sensors)
-    # added labels for each sensor which displays the sensor number and the counted occurence for music
-    mc = MarkerCluster()
-    for index, row in gdf.iterrows():
-        mc.add_child(folium.Marker(location=[str(row[lat]), str(row[long])],
-                                   clustered_marker=True))
+        # create dataframe that is grouped by sensor and counts occurrence of overarching class for each one
 
-    # add marker cluster layer to empty map
-    circlemap.add_child(mc)
-    return circlemap
+        gdf = df.groupby(['sensor_id', 'latitude', 'longitude'])[main_class].count().reset_index()
+
+        # convert to geo dataframe and create geometry column with lat/long
+        gdf = gpd.GeoDataFrame(
+            gdf, crs={'init': 'epsg:4326'}, geometry=gpd.points_from_xy(gdf.longitude, gdf.latitude))
+
+        circlemap = folium.Map(location=location, zoom_start=12)
+
+        # add marker for each sensor, use a clustered view (zoom in to see individual sensors)
+        # added labels for each sensor which displays the sensor number and the counted occurence for music
+        mc = MarkerCluster()
+        for index, row in gdf.iterrows():
+            mc.add_child(folium.Marker(location=[str(row[lat]), str(row[long])],
+                                       clustered_marker=True))
+
+        # add marker cluster layer to empty map
+        circlemap.add_child(mc)
+        return circlemap
+    else:
+        print("Dataframe does not have latitude and longitude columns")
 
 
 def occurrence_by_borough(df):
@@ -266,33 +271,26 @@ def occurrence_by_borough(df):
     return plt.show()
 
 
-def occurrence_by_time(df, time, title):
+def occurrence_by_time(df, time, sound_class):
     """
     temporal view of sample data
 
     Parameters
     ----------
-    df (dataframe): dataframe
+    df (dataframe): dataframe with only instances where specified class is present/true
     time (string): specifies what scope you want to look at (e.g. hour, day, week, year)
-    title (string): option to add a class specific title
+    sound_class (string): add a class specific title
     Returns
     -------
     returns a barplot based on what temporal measure you desire to use
     """
     sns.set(style="whitegrid")
     plt.figure(figsize=(15, 15))
-    if time == 'year':
-        plt.title(title + ' Occurrence by Year')
-        return sns.countplot(x='year', data=df)
-    elif time == 'week':
-        plt.title(title + ' Occurrence by Week')
-        return sns.countplot(x='week', data=df)
-    elif time == 'day':
-        plt.title(title + ' Occurrence by Day')
-        return sns.countplot(x='week', data=df)
-    elif time == 'hour':
-        plt.title(title + ' Occurrence by Hour')
-        return sns.countplot(x='hour', data=df)
+    if time in df.columns:
+        plt.title('{} occurrence by {}'.format(sound_class, time))
+        return sns.countplot(x=time, data=df)
+    else:
+        print("This column does not exist in given dataframe")
 
 
 def occurrence_by_sensor(df, column, title):
