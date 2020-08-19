@@ -1,6 +1,6 @@
 # SONYC-UST-Visualization
 
-This repository contains the sonyc_visualization package which was created to be used for temporal and spatial analysis specifically on SONYC-UST data as well as specific examples demonstrating the use of each function. Functions allow for the creation of plots such as heatmaps, clustermaps, and various barplots which look at the relationship between specific classes and time/location. Additionally, the user can use sonyc_visualization functions to load a csv into a pandas dataframe and GeoDataFrame which are necessary for the use of other functions.
+This repository contains the sonyc_visualization package which was created to be used for temporal and spatial analysis specifically on SONYC-UST data as well as specific examples demonstrating the use of each function. Functions allow for the creation of plots such as heatmaps, clustermaps, and various barplots which look at the relationship between specific classes and time/location. Additionally, the user can use sonyc_visualization to load a csv into a pandas dataframe and GeoDataFrame which are necessary for the use of other functions.
 
 ## Getting Started
 
