@@ -4,7 +4,8 @@ This repository contains the sonyc_visualization package which was created to be
 
 ## Getting Started
 
-There are various python libraries/packages that will need to be installed to create the proper environment and use all of sonyc_visualization's functions. 
+There are various python libraries/packages that will need to be installed to create the proper environment and use all of sonyc_visualization's functions.
+
 Features:
 - pandas
 - matplotlib
