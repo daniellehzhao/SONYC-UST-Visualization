@@ -106,9 +106,14 @@ def load_df(csv, classes=None, main_class=None):
             return newdf
 
 
-def create_geodata_frame(df, print_head=False):
+def create_geodataframe(df, print_head=False):
     """
-    creates a geo data frame that can be used with other functions to do geospatial analysis
+    A GeoDataFrame is a pandas.DataFrame that has one GeoSeries column referred to as the GeoDataFrame’s “geometry”.
+    When a spatial method is applied (such as trying to create a heatmap) to a GeoDataFrame,commands will always act on
+    the “geometry” column.
+
+    Without converting to a GeoDataFrame, it will not be possible to use the other functions to create various maps
+    because the latitude and longitude columns do not function separately/on their own for spatial analysis.
 
     Parameters
     ----------
@@ -117,7 +122,7 @@ def create_geodata_frame(df, print_head=False):
 
     Returns
     -------
-    a geodata frame that has geometry and specifies longitude/latitude points
+    a GeoDataFrame that has geometry and specifies longitude/latitude points
     works well with heatmap function
 
     """
@@ -136,7 +141,7 @@ def heatmap(gdf, location, gradient=None):
     This is a function that creates a heatmap.
     Parameters
     ----------
-    gdf (geodata frame) : geodata frame
+    gdf (geodata frame) : GeoDataFrame
     location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
     gradient (dict) (default:None): option to change the gradient, useful when combining other heatmaps
 
@@ -179,7 +184,7 @@ def add_heatmap(original_map, gdf, color_gradient=None):
     Parameters
     ----------
     original_map (map variable): This must be an existing heatmap, or even an empty map
-    gdf (geodata frame): geodata frame
+    gdf (GeoDataFrame): GeoDataFrame
     gradient (dict): specifies gradient color configuration so that colors are differentiable. If value is None, the
     default gradient is {0.4: ‘blue’, 0.65: ‘lime’, 1: ‘red’}
 
@@ -241,11 +246,12 @@ def clustermap(df, main_class, location):
                                        clustered_marker=True))
 
         # add marker cluster layer to empty map
-        
+
         circlemap.add_child(mc)
         return circlemap
     else:
-        print("Dataframe does not have latitude and longitude columns")
+        print("Dataframe does not have latitude and longitude columns or check to make sure column names are 'latitude'"
+              "and 'longitude'")
 
 
 def occurrence_by_borough(df):
