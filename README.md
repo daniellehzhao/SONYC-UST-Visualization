@@ -14,5 +14,4 @@ Features:
 - folium
 
 ### Installing
-
 Included in this repo is a requirements.txt file which will simplify the process of recreating an environment with all necessary packages.
