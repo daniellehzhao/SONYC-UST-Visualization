@@ -12,5 +12,7 @@ Included in this repo is a requirements.txt file which will simplify the process
 1. Create/activate your conda environment. 
 
 2. Install packages using requirements.txt  
-<pip install -r requirements.txt> 
+'''
+pip install -r requirements.txt
+'''
 (You will have to make sure that pip is up to date)
