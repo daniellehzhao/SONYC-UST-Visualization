@@ -180,8 +180,8 @@ def add_heatmap(original_map, gdf, color_gradient=None):
     ----------
     original_map (map variable): This must be an existing heatmap, or even an empty map
     gdf (geodata frame): geodata frame
-    gradient (dictionary): specifies gradient color configuration so that colors are differentiable
-    (e.g. {0.4: ‘blue’, 0.65: ‘lime’, 1: ‘red’})
+    gradient (dict): specifies gradient color configuration so that colors are differentiable. If value is None, the
+    default gradient is {0.4: ‘blue’, 0.65: ‘lime’, 1: ‘red’}
 
     Returns
     -------
@@ -205,29 +205,29 @@ def add_heatmap(original_map, gdf, color_gradient=None):
     return original_map
 
 
-def clustermap(df, main_class, location, lat, long):
+def clustermap(df, main_class, location):
     """
     This is a function that creates a cluster map.
 
     Parameters
     ----------
     df (dataframe): dataframe with latitude and longitude columns
+    main_class (string): overarching class to analyze from dataframe
     location (list): latitude and longitude  of central map location (e.g. NYC = [40.693943, -74.025])
-    lat (string) : dataset's column name for latitude
-    long (string) : dataset's column name for longitude
 
     Returns
     -------
     A cluster map of sensors
 
     """
-    if (lat in df.columns) and (long in df.columns):
+    if ('latitude' in df.columns) and ('longitude' in df.columns):
 
         # create dataframe that is grouped by sensor and counts occurrence of overarching class for each one
 
         gdf = df.groupby(['sensor_id', 'latitude', 'longitude'])[main_class].count().reset_index()
 
         # convert to geo dataframe and create geometry column with lat/long
+
         gdf = gpd.GeoDataFrame(
             gdf, crs={'init': 'epsg:4326'}, geometry=gpd.points_from_xy(gdf.longitude, gdf.latitude))
 
@@ -237,10 +237,11 @@ def clustermap(df, main_class, location, lat, long):
         # added labels for each sensor which displays the sensor number and the counted occurence for music
         mc = MarkerCluster()
         for index, row in gdf.iterrows():
-            mc.add_child(folium.Marker(location=[str(row[lat]), str(row[long])],
+            mc.add_child(folium.Marker(location=[str(row['latitude']), str(row['longitude'])],
                                        clustered_marker=True))
 
         # add marker cluster layer to empty map
+        
         circlemap.add_child(mc)
         return circlemap
     else:
@@ -279,7 +280,7 @@ def occurrence_by_time(df, time, sound_class):
     ----------
     df (dataframe): dataframe with only instances where specified class is present/true
     time (string): specifies what scope you want to look at (e.g. hour, day, week, year)
-    sound_class (string): add a class specific title
+    sound_class (string): specify which class is being analyzed for title of plot
     Returns
     -------
     returns a barplot based on what temporal measure you desire to use
@@ -293,22 +294,25 @@ def occurrence_by_time(df, time, sound_class):
         print("This column does not exist in given dataframe")
 
 
-def occurrence_by_sensor(df, column, title):
+def occurrence_by_sensor(df, class_column, title):
     """
     mapping sensors to data barplot
 
     Parameters
     ----------
     df (dataframe): dataframe
-    column (string): specify class column name
+    class_column (string): specify class column name
 
     Returns
     -------
     a barplot that shows samples per sensor
 
     """
-    col = str(column)
-    plt.figure(figsize=(20, 20))
-    plt.xlabel('Sensor')
-    plt.ylabel(title + ' Presence Occurrence By Sensor')
-    return df.groupby('sensor_id')[col].count().plot.bar()
+    if class_column in df.columns:
+        col = str(class_column)
+        plt.figure(figsize=(20, 20))
+        plt.xlabel('Sensor')
+        plt.ylabel(title + ' Presence Occurrence By Sensor')
+        return df.groupby('sensor_id')[col].count().plot.bar()
+    else:
+        print("Class column does not exist in given dataframe")
