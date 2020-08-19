@@ -74,7 +74,7 @@ def load_df(csv, classes=None, main_class=None):
             '8_dog_presence']
     if classes is None:
         df = pd.read_csv(csv)
-        df = df.drop(columns=col1).groupby(
+        df = df.groupby(
             ['split', 'sensor_id', 'audio_filename', 'borough',
              'block', 'latitude', 'longitude', 'year', 'week', 'day', 'hour']).sum() > 0
         df = df.reset_index()
