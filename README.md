@@ -4,14 +4,16 @@ This repository contains the sonyc_visualization package which was created to be
 
 ## Getting Started
 
-There are various python libraries/packages that will need to be installed to create the proper environment and use all of sonyc_visualization's functions.
-
-Features:
-- pandas
-- matplotlib
-- seaborn
-- geopandas
-- folium
+Examples: https://github.com/daniellehzhao/SONYC-UST-Visualization/blob/master/examples/sonyc_ust_exploration.ipynb
 
 ### Installing
-Included in this repo is a requirements.txt file which will simplify the process of recreating an environment with all necessary packages.
+Included in this repo is a requirements.txt file which will simplify the process of recreating an environment with all necessary packages (pandas, seaborn, matplotlib, geopandas, and folium). 
+
+1. Create/activate your conda environment.
+
+   Documentation: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+
+2. Install packages using requirements.txt  
+   <pre><code>pip install -r requirements.txt</code></pre>
+
+   (You will have to make sure that pip is up to date)
